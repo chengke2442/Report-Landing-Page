@@ -58,18 +58,37 @@ cd frontend && npm test
 
 ## Screenshots / demo video
 
-_Placeholder — screenshots and a short demo video go here._
+**Landing page**
+![Landing page listing the three available reports](docs/screenshots/landing-page.png)
+
+**Search / filter**
+![Landing page filtered to reports matching "use"](docs/screenshots/search-filter.png)
+
+**Users report** (sorted by Name)
+![Users report table sorted by name](docs/screenshots/user-report-sorted.png)
+
+**Departments report**
+![Departments report table](docs/screenshots/department-reports.png)
+
+**Projects report**
+![Projects report table](docs/screenshots/project-reports.png)
+
+**Responsive layout** (mobile viewport)
+![Landing page on a narrow mobile viewport, cards stacked in a single column](docs/screenshots/mobile.png)
+
+**Error state** (backend unreachable)
+![Landing page showing an error message after the backend was stopped](docs/screenshots/error.png)
+
+_Demo video: placeholder — link goes here once recorded._
 
 ## Assumptions and Tradeoffs
 
-**Docker Compose over a plain script.** The assessment asks for a way to run the whole stack with one command. Compose gives that for free with standard, inspectable config (`docker-compose.yml`) instead of a bespoke shell script, at the cost of requiring Docker to be installed. The `npm run dev` path (`scripts/dev.mjs`) covers the no-Docker case.
+**Docker Compose for one-command startup.** Docker Compose provides a standardized and inspectable way to build and run the frontend and backend together with one command. The trade-off is that Docker must be installed, so the project also includes an `npm run dev` workflow for local development without Docker.
 
-**A generic registry-based report-row controller over three separate controllers.** `ReportRowController` + `ReportRegistry` serve all three reports (`GET /api/reports/{report}`) through one endpoint keyed by report id, instead of one Spring `@RestController` per report. Adding a fourth report means registering it, not writing a new controller class.
+**A registry-based report API instead of separate controllers.** `ReportRowController` and `ReportRegistry` serve report data through `GET /api/reports/{reportId}`, including the required `/users`, `/departments`, and `/projects` routes. This avoids duplicating controller logic and makes adding another report primarily a registration task. The trade-off is that the registry introduces an additional abstraction that would be unnecessary for a single report.
 
-**Frontend-owned column config over backend-driven schema.** Each report's table columns (headers, which fields to show, in what order) are declared in the frontend (`frontend/src/features/reports/tables/*Table.tsx`), not returned by the API. The backend only returns row data. This keeps the API surface small and avoids a schema-description protocol, at the cost of the frontend needing to know each report's shape in advance — acceptable here since the set of reports is fixed, not user-defined.
+**Frontend-defined table columns instead of a backend-driven schema.** Each report defines its columns and display order in the frontend, while the backend returns only row data. This keeps the API simple and maintains compile-time visibility of each report's presentation. The trade-off is that adding or changing a report schema may require coordinated frontend and backend changes. A metadata-driven schema could be more appropriate if reports became user-configurable.
 
-**MSW over manual frontend mocks.** Frontend tests intercept `fetch` at the network level with Mock Service Worker rather than mocking `fetch` or the API module directly. Tests exercise the real request/response path (including error handling), and the same handlers work in tests and (if ever needed) local browser development.
+**MSW for frontend API tests.** Mock Service Worker intercepts requests at the network boundary, allowing tests to exercise the application's real fetching, loading, empty, and error behavior without coupling tests to a mocked API module. This adds some test setup, but provides more realistic coverage than mocking `fetch` directly.
 
-**Hardcoded in-memory data over an H2/JPA layer.** Report data lives in-memory in each `*Service` class rather than a database. There's no persistence requirement in the assessment, and skipping JPA/H2 removes a layer of setup (schema, migrations, entity mapping) that wouldn't be exercised by anything the reports currently do (no writes, no filtering beyond what's already returned).
-
-**Fixed hardcoded "last updated" dates.** Each report's `lastUpdated` metadata (shown on the Landing Page) is a hardcoded string rather than derived from actual data mutation timestamps, since the underlying data is static and in-memory — there's nothing to compute the timestamp from.
+**In-memory sample data instead of a persistence layer.** The assessment does not require writes or persistence, so report data and `lastUpdated` values are static and stored in memory. This keeps the solution focused and avoids unused database, migration, and entity-mapping infrastructure. In production, I would replace this layer with persistent storage and derive update timestamps from the underlying data.
