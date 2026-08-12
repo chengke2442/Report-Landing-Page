@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { UsersTable } from './tables/UsersTable'
-import type { User } from './types'
+import { REPORT_TABLES } from './tableRegistry'
 import { useReportRows } from './useReportRows'
 
 const REPORT_TITLES: Record<string, string> = {
@@ -11,7 +10,8 @@ const REPORT_TITLES: Record<string, string> = {
 
 export function ReportDetailPage() {
   const { reportId = '' } = useParams<{ reportId: string }>()
-  const { data, isLoading, isError } = useReportRows<User>(reportId)
+  const { data, isLoading, isError } = useReportRows<unknown>(reportId)
+  const ReportTable = REPORT_TABLES[reportId]
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10">
@@ -27,8 +27,8 @@ export function ReportDetailPage() {
         {isError && (
           <p className="mt-8 text-red-600">Something went wrong loading this report.</p>
         )}
-        {!isLoading && !isError && reportId === 'users' && (
-          <UsersTable data={data} isLoading={false} isError={false} />
+        {!isLoading && !isError && ReportTable && (
+          <ReportTable data={data as unknown[]} isLoading={false} isError={false} />
         )}
       </div>
     </div>
