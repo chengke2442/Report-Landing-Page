@@ -98,3 +98,68 @@ describe('ReportDetailPage (users)', () => {
     expect(await screen.findByText('Landing page')).toBeInTheDocument()
   })
 })
+
+const mockDepartments = [
+  {
+    departmentId: 'D001',
+    name: 'Engineering',
+    manager: 'Alice Johnson',
+    employeeCount: 42,
+    location: 'San Francisco',
+  },
+  {
+    departmentId: 'D002',
+    name: 'Sales',
+    manager: 'Brian Chen',
+    employeeCount: 28,
+    location: 'New York',
+  },
+]
+
+describe('ReportDetailPage (departments)', () => {
+  it('shows a loading state then renders the table rows', async () => {
+    server.use(http.get('/api/reports/departments', () => HttpResponse.json(mockDepartments)))
+    renderDetailPage('departments')
+
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(await screen.findByText('Engineering')).toBeInTheDocument()
+    expect(screen.getByText('Sales')).toBeInTheDocument()
+  })
+
+  it('shows an empty state when there are no rows', async () => {
+    server.use(http.get('/api/reports/departments', () => HttpResponse.json([])))
+    renderDetailPage('departments')
+
+    expect(await screen.findByText(/no rows/i)).toBeInTheDocument()
+  })
+
+  it('shows an error state when the fetch fails', async () => {
+    server.use(http.get('/api/reports/departments', () => new HttpResponse(null, { status: 500 })))
+    renderDetailPage('departments')
+
+    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
+  })
+
+  it('shows a sort indicator on a column header after it is clicked', async () => {
+    server.use(http.get('/api/reports/departments', () => HttpResponse.json(mockDepartments)))
+    renderDetailPage('departments')
+    await screen.findByText('Engineering')
+
+    const user = userEvent.setup()
+    const nameHeader = screen.getByText('Department Name')
+    await user.click(nameHeader)
+
+    expect(nameHeader.closest('th')?.textContent).toMatch(/[▲▼]/)
+  })
+
+  it('navigates back to the landing page', async () => {
+    server.use(http.get('/api/reports/departments', () => HttpResponse.json(mockDepartments)))
+    renderDetailPage('departments')
+    await screen.findByText('Engineering')
+
+    const user = userEvent.setup()
+    await user.click(screen.getByText(/back to reports/i))
+
+    expect(await screen.findByText('Landing page')).toBeInTheDocument()
+  })
+})

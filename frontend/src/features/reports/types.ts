@@ -13,3 +13,11 @@ export interface User {
   status: string
   createdDate: string
 }
+
+export interface Department {
+  departmentId: string
+  name: string
+  manager: string
+  employeeCount: number
+  location: string
+}
