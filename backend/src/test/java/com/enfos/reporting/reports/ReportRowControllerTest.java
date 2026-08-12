@@ -45,6 +45,20 @@ class ReportRowControllerTest {
     }
 
     @Test
+    void returnsProjectRows() throws Exception {
+        mockMvc.perform(get("/api/reports/projects"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", not(empty())))
+                .andExpect(jsonPath("$[0].projectId").exists())
+                .andExpect(jsonPath("$[0].name").exists())
+                .andExpect(jsonPath("$[0].department").exists())
+                .andExpect(jsonPath("$[0].owner").exists())
+                .andExpect(jsonPath("$[0].status").exists())
+                .andExpect(jsonPath("$[0].startDate").exists())
+                .andExpect(jsonPath("$[0].endDate").exists());
+    }
+
+    @Test
     void returnsStructured404ForUnknownReport() throws Exception {
         mockMvc.perform(get("/api/reports/unknown"))
                 .andExpect(status().isNotFound())

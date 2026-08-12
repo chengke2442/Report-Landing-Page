@@ -163,3 +163,72 @@ describe('ReportDetailPage (departments)', () => {
     expect(await screen.findByText('Landing page')).toBeInTheDocument()
   })
 })
+
+const mockProjects = [
+  {
+    projectId: 'P001',
+    name: 'Portal Redesign',
+    department: 'Engineering',
+    owner: 'Alice Johnson',
+    status: 'In Progress',
+    startDate: '2026-01-06',
+    endDate: '2026-09-30',
+  },
+  {
+    projectId: 'P002',
+    name: 'Q3 Sales Campaign',
+    department: 'Sales',
+    owner: 'Brian Chen',
+    status: 'Completed',
+    startDate: '2025-07-01',
+    endDate: '2025-09-30',
+  },
+]
+
+describe('ReportDetailPage (projects)', () => {
+  it('shows a loading state then renders the table rows', async () => {
+    server.use(http.get('/api/reports/projects', () => HttpResponse.json(mockProjects)))
+    renderDetailPage('projects')
+
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(await screen.findByText('Portal Redesign')).toBeInTheDocument()
+    expect(screen.getByText('Q3 Sales Campaign')).toBeInTheDocument()
+  })
+
+  it('shows an empty state when there are no rows', async () => {
+    server.use(http.get('/api/reports/projects', () => HttpResponse.json([])))
+    renderDetailPage('projects')
+
+    expect(await screen.findByText(/no rows/i)).toBeInTheDocument()
+  })
+
+  it('shows an error state when the fetch fails', async () => {
+    server.use(http.get('/api/reports/projects', () => new HttpResponse(null, { status: 500 })))
+    renderDetailPage('projects')
+
+    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
+  })
+
+  it('shows a sort indicator on a column header after it is clicked', async () => {
+    server.use(http.get('/api/reports/projects', () => HttpResponse.json(mockProjects)))
+    renderDetailPage('projects')
+    await screen.findByText('Portal Redesign')
+
+    const user = userEvent.setup()
+    const nameHeader = screen.getByText('Project Name')
+    await user.click(nameHeader)
+
+    expect(nameHeader.closest('th')?.textContent).toMatch(/[▲▼]/)
+  })
+
+  it('navigates back to the landing page', async () => {
+    server.use(http.get('/api/reports/projects', () => HttpResponse.json(mockProjects)))
+    renderDetailPage('projects')
+    await screen.findByText('Portal Redesign')
+
+    const user = userEvent.setup()
+    await user.click(screen.getByText(/back to reports/i))
+
+    expect(await screen.findByText('Landing page')).toBeInTheDocument()
+  })
+})

@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { DepartmentsTable } from './tables/DepartmentsTable'
+import { ProjectsTable } from './tables/ProjectsTable'
 import { UsersTable } from './tables/UsersTable'
 
 export interface ReportTableProps {
@@ -14,4 +15,5 @@ export interface ReportTableProps {
 export const REPORT_TABLES: Record<string, ComponentType<ReportTableProps>> = {
   users: UsersTable as unknown as ComponentType<ReportTableProps>,
   departments: DepartmentsTable as unknown as ComponentType<ReportTableProps>,
+  projects: ProjectsTable as unknown as ComponentType<ReportTableProps>,
 }

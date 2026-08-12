@@ -21,3 +21,13 @@ export interface Department {
   employeeCount: number
   location: string
 }
+
+export interface Project {
+  projectId: string
+  name: string
+  department: string
+  owner: string
+  status: string
+  startDate: string
+  endDate: string
+}
