@@ -1,0 +1,9 @@
+{
+  "name": "reporting-portal",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Enfos Reporting Portal — single-command dev runner for the frontend + backend.",
+  "scripts": {
+    "dev": "node scripts/dev.mjs"
+  }
+}

@@ -1,0 +1,15 @@
+# Claude Code tooling — not part of the submitted application
+.claude/
+.agents/
+skills-lock.json
+CLAUDE.md
+docs/agents/
+
+# Assessment prompt (not part of the solution)
+Enfos_Coding_Take-Home_Assessment*.pdf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
