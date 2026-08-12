@@ -1,8 +1,16 @@
+import { Route, Routes } from 'react-router-dom'
+import { LandingPage } from './features/reports/LandingPage'
+
+function ReportDetailPlaceholder() {
+  return <p className="p-10 text-slate-500">Report detail view coming in the next ticket.</p>
+}
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
-      <p>Reporting portal — scaffolding in place.</p>
-    </div>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/reports/:reportId" element={<ReportDetailPlaceholder />} />
+    </Routes>
   )
 }
 
