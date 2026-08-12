@@ -23,8 +23,12 @@ export function ReportDetailPage() {
           {REPORT_TITLES[reportId] ?? reportId}
         </h1>
 
-        {reportId === 'users' && (
-          <UsersTable data={data} isLoading={isLoading} isError={isError} />
+        {isLoading && <p className="mt-8 text-slate-500">Loading…</p>}
+        {isError && (
+          <p className="mt-8 text-red-600">Something went wrong loading this report.</p>
+        )}
+        {!isLoading && !isError && reportId === 'users' && (
+          <UsersTable data={data} isLoading={false} isError={false} />
         )}
       </div>
     </div>

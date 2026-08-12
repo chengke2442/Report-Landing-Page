@@ -64,6 +64,17 @@ describe('ReportDetailPage (users)', () => {
     expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
   })
 
+  it('shows an error state for a report id the backend does not recognize', async () => {
+    server.use(
+      http.get('/api/reports/nonexistent', () =>
+        HttpResponse.json({ status: 404, message: 'Unknown report: nonexistent', timestamp: new Date().toISOString() }, { status: 404 }),
+      ),
+    )
+    renderDetailPage('nonexistent')
+
+    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
+  })
+
   it('shows a sort indicator on a column header after it is clicked', async () => {
     server.use(http.get('/api/reports/users', () => HttpResponse.json(mockUsers)))
     renderDetailPage()
