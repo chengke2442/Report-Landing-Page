@@ -37,7 +37,11 @@ export function LandingPage() {
           <p className="mt-8 text-red-600">Something went wrong loading reports.</p>
         )}
 
-        {!isLoading && !isError && (
+        {!isLoading && !isError && visibleReports.length === 0 && (
+          <p className="mt-8 text-slate-500">No reports match your search.</p>
+        )}
+
+        {!isLoading && !isError && visibleReports.length > 0 && (
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {visibleReports.map((report) => (
               <Link

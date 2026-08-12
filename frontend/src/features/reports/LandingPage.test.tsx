@@ -62,4 +62,19 @@ describe('LandingPage', () => {
     expect(screen.queryByText('Users')).not.toBeInTheDocument()
     expect(screen.queryByText('Projects')).not.toBeInTheDocument()
   })
+
+  it('shows an empty state when no report matches the search', async () => {
+    server.use(
+      http.get('/api/reports', () => HttpResponse.json(mockReports)),
+    )
+
+    renderWithProviders(<LandingPage />)
+    await screen.findByText('Users')
+
+    const user = userEvent.setup()
+    await user.type(screen.getByRole('textbox', { name: /search/i }), 'zzz')
+
+    expect(screen.getByText(/no reports match your search/i)).toBeInTheDocument()
+    expect(screen.queryByText('Users')).not.toBeInTheDocument()
+  })
 })

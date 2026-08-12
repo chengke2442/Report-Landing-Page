@@ -79,7 +79,10 @@ cd frontend && npm test
 **Error state** (backend unreachable)
 ![Landing page showing an error message after the backend was stopped](docs/screenshots/error.png)
 
-_Demo video: placeholder — link goes here once recorded._
+**Empty state** (report with no rows)
+![Users report showing "No rows to show." with zero data](docs/screenshots/empty-state.jpg)
+
+**Demo video:** [Loom recording](https://www.loom.com/share/b6990fd0e687437eabbe83c17887a869)
 
 ## Assumptions and Tradeoffs
 
