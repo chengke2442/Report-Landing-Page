@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  type ColumnDef,
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 
-export interface Column<T> {
-  header: string
-  accessorKey: keyof T
-}
+export type Column<T> = ColumnDef<T, unknown>
 
 interface TableProps<T> {
   columns: Column<T>[]
@@ -14,8 +19,6 @@ interface TableProps<T> {
   emptyMessage?: string
 }
 
-type SortDirection = 'asc' | 'desc'
-
 export function Table<T>({
   columns,
   data,
@@ -24,25 +27,21 @@ export function Table<T>({
   errorMessage = 'Something went wrong loading this report.',
   emptyMessage = 'No rows to show.',
 }: TableProps<T>) {
-  const [sortKey, setSortKey] = useState<keyof T | null>(null)
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [sorting, setSorting] = useState<SortingState>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  const sortedData = useMemo(() => {
-    if (!data) return []
-    if (!sortKey) return data
-    const copy = [...data]
-    copy.sort((a, b) => {
-      const aVal = a[sortKey]
-      const bVal = b[sortKey]
-      if (aVal === bVal) return 0
-      const result = (aVal as string | number) < (bVal as string | number) ? -1 : 1
-      return sortDirection === 'asc' ? result : -result
-    })
-    return copy
-  }, [data, sortKey, sortDirection])
+  const table = useReactTable({
+    data: data ?? [],
+    columns,
+    defaultColumn: { cell: (info) => String(info.getValue()) },
+    state: { sorting },
+    onSortingChange: setSorting,
+    enableSortingRemoval: false,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
 
   function updateScrollShadows() {
     const el = scrollRef.current
@@ -55,16 +54,7 @@ export function Table<T>({
     updateScrollShadows()
     window.addEventListener('resize', updateScrollShadows)
     return () => window.removeEventListener('resize', updateScrollShadows)
-  }, [sortedData, columns])
-
-  function handleHeaderClick(key: keyof T) {
-    if (sortKey === key) {
-      setSortDirection((dir) => (dir === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDirection('asc')
-    }
-  }
+  }, [data, columns])
 
   if (isLoading) {
     return <p className="mt-8 text-slate-500">Loading…</p>
@@ -83,28 +73,28 @@ export function Table<T>({
       <div ref={scrollRef} onScroll={updateScrollShadows} className="overflow-x-auto">
         <table className="w-full min-w-max border-collapse text-left text-sm">
           <thead>
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={String(column.accessorKey)}
-                  onClick={() => handleHeaderClick(column.accessorKey)}
-                  className="cursor-pointer whitespace-nowrap border-b border-slate-200 px-4 py-2 font-semibold text-slate-700 select-none"
-                >
-                  {column.header}
-                  {sortKey === column.accessorKey ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : ''}
-                </th>
-              ))}
-            </tr>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                    className="cursor-pointer whitespace-nowrap border-b border-slate-200 px-4 py-2 font-semibold text-slate-700 select-none"
+                  >
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.column.getIsSorted() === 'asc' && ' ▲'}
+                    {header.column.getIsSorted() === 'desc' && ' ▼'}
+                  </th>
+                ))}
+              </tr>
+            ))}
           </thead>
           <tbody>
-            {sortedData.map((row, index) => (
-              <tr key={index} className="border-b border-slate-100">
-                {columns.map((column) => (
-                  <td
-                    key={String(column.accessorKey)}
-                    className="whitespace-nowrap px-4 py-2 text-slate-600"
-                  >
-                    {String(row[column.accessorKey])}
+            {table.getRowModel().rows.map((row) => (
+              <tr key={row.id} className="border-b border-slate-100">
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="whitespace-nowrap px-4 py-2 text-slate-600">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
               </tr>
